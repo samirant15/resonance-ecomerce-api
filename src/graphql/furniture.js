@@ -2,6 +2,7 @@ const { GraphQLObjectType, GraphQLString, GraphQLList, GraphQLBoolean, GraphQLFl
 import AirtableError from 'airtable/lib/airtable_error';
 import { PictureType } from './picture';
 import * as furnitureService from '../airtable/furnitureService';
+import * as mailService from '../mail/mailService';
 import { getUserFromJWT } from '../common/securityService';
 
 export const FurnitureType = new GraphQLObjectType({
@@ -51,7 +52,7 @@ const fieldsMapping = {
     "Settings": "settings"
 }
 
-const parseFields = (data) => {
+export const parseFields = (data) => {
     let parsed = {};
     for (const [key, value] of Object.entries(data)) {
         parsed[fieldsMapping[key]] = value;
@@ -116,5 +117,31 @@ export const queryFields = {
                 throw new Error(`An internal error has occurred! Please try again later.`);
             }
         }
-    }
+    },
+    /**
+     * furnitureSend(id: "123", email: "user@mail.com") 
+     */
+    furnitureSend: {
+        type: new GraphQLObjectType({
+            name: 'sentType',
+            fields: () => ({
+                sent: { type: GraphQLBoolean },
+            })
+        }),
+        args: {
+            id: { type: GraphQLString },
+            email: { type: GraphQLString }
+        },
+        async resolve(_, args, context) {
+            // The following line adds auth validation to this method
+            const loggedUser = await getUserFromJWT(context.token);
+            try {
+                await mailService.sendFurnitureMail(args.id, args.email);
+                return { sent: true };
+            } catch (error) {
+                console.error(error);
+                throw new Error(`An internal error has occurred! Please try again later.`);
+            }
+        }
+    },
 }

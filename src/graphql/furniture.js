@@ -2,6 +2,7 @@ const { GraphQLObjectType, GraphQLString, GraphQLList, GraphQLBoolean, GraphQLFl
 import AirtableError from 'airtable/lib/airtable_error';
 import { PictureType } from './picture';
 import * as furnitureService from '../airtable/furnitureService';
+import { getUserFromJWT } from '../common/securityService';
 
 export const FurnitureType = new GraphQLObjectType({
     name: 'FurnitureType',
@@ -67,7 +68,9 @@ export const queryFields = {
         args: {
             id: { type: GraphQLString }
         },
-        async resolve(parentValue, args) {
+        async resolve(_, args, context) {
+            // The following line adds auth validation to this method
+            const loggedUser = await getUserFromJWT(context.token);
             try {
                 const res = await furnitureService.getFurniture(args.id);
                 const data = { id: res.id, ...res.fields };
@@ -89,7 +92,9 @@ export const queryFields = {
         args: {
             offset: { type: GraphQLString }
         },
-        async resolve(parentValue, args) {
+        async resolve(_, args, context) {
+            // The following line adds auth validation to this method
+            const loggedUser = await getUserFromJWT(context.token);
             try {
                 const res = await furnitureService.getFurnitures(args.offset);
 

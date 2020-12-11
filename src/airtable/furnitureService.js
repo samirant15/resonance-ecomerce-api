@@ -18,7 +18,7 @@ export const getFurnitures = (offset) => {
         base: baseName,
         method: 'get',
         params: {
-            pageSize: 5,
+            pageSize: 8,
             offset: offset
         }
     });

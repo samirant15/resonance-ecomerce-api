@@ -4,6 +4,13 @@ var express = require('express');
 var dotenv = require('dotenv');
 var cors = require('cors')
 var { graphqlHTTP } = require('express-graphql');
+var fs = require('fs');
+var https = require('https');
+
+// SSL
+var privateKey = fs.readFileSync(__dirname + '/certificate/server.key', 'utf8');
+var certificate = fs.readFileSync(__dirname + '/certificate/server.crt', 'utf8');
+var credentials = { key: privateKey, cert: certificate };
 
 dotenv.config();
 var app = express();
@@ -27,5 +34,6 @@ app.use('/graphql',
     }),
 );
 
-app.listen(process.env.APP_PORT);
+var httpsServer = https.createServer(credentials, app);
+httpsServer.listen(process.env.APP_PORT);
 console.log(`Running Resonance E-Comerce API at port ${process.env.APP_PORT}!`);
